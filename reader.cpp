@@ -2,22 +2,24 @@
 #include <fstream>
 #include <string>
 
-#include <AddressBook.pb.h>
+#include <google/protobuf/text_format.h>
+
+#include "AddressBook.pb.h"
+
 using namespace std;
 
 // Iterates though all people in the AddressBook and prints info about them.
 void ListPeople(const tutorial::AddressBook& address_book) {
-    for (int i = 0; i < address_book.people_size(); i++) {
-        const tutorial::Person& person = address_book.people(i);
-
+    const auto &peoples = address_book.people();
+    for (const auto &person : peoples) {
         cout << "Person ID: " << person.id() << endl;
         cout << "  Name: " << person.name() << endl;
         if (person.has_email()) {
             cout << "  E-mail address: " << person.email() << endl;
         }
 
-        for (int j = 0; j < person.phones_size(); j++) {
-            const tutorial::Person::PhoneNumber& phone_number = person.phones(j);
+        const auto &phones = person.phones();
+        for (const auto &phone_number : phones) {
 
             switch (phone_number.type()) {
                 case tutorial::Person::MOBILE:
@@ -59,6 +61,12 @@ int main(int argc, char* argv[]) {
     }
 
     ListPeople(address_book);
+
+    string text;
+    google::protobuf::TextFormat::Printer printer;
+    printer.SetUseUtf8StringEscaping(true);
+    printer.PrintToString(address_book, &text);
+    std::cout << text << std::endl;
 
     // Optional:  Delete all global objects allocated by libprotobuf.
     google::protobuf::ShutdownProtobufLibrary();
